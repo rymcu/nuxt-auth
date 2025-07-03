@@ -519,11 +519,7 @@ handleSocialCallback(provider: string, code: string, state?: string): Promise<vo
 
 ### Utility Functions
 
-#### `hasAdminPrivileges(data)`
-
-Checks if the user has admin privileges.
-
-#### `responseError(response)`
+#### `authResponseError(response)`
 
 Extracts error messages from API responses.
 
