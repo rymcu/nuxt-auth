@@ -336,7 +336,7 @@ const signInWithGoogle = async () => {
     await initiateSocialLogin('google', {
       clientId: 'your-google-client-id',
       redirectUri: 'http://localhost:3000/auth/google/callback',
-      scopes: ['openid', 'profile', 'email'],
+      scopes: 'openid profile email',
       callbackUrl: '/dashboard' // Where to go after successful auth
     })
   } catch (error) {
