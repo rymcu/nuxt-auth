@@ -1,4 +1,4 @@
-# Nuxt Simple Auth
+# Simple Nuxt Auth
 
 A simple and flexible authentication module for Nuxt 3 with JWT and social login support. 
 **This Auth Package only works for a Nuxt app that has a separate backend that handles authenthication**
@@ -82,7 +82,7 @@ export default defineNuxtConfig({
       google: {
         clientId: 'your-google-client-id.googleusercontent.com',
         redirectUri: 'http://localhost:3000/auth/google/callback',
-        scopes: ['openid', 'profile', 'email']
+        scopes: 'openid profile email'
       }
     },
   },
@@ -336,7 +336,7 @@ const signInWithGoogle = async () => {
     await initiateSocialLogin('google', {
       clientId: 'your-google-client-id',
       redirectUri: 'http://localhost:3000/auth/google/callback',
-      scopes: ['openid', 'profile', 'email'],
+      scopes: 'openid profile email',
       callbackUrl: '/dashboard' // Where to go after successful auth
     })
   } catch (error) {
@@ -581,7 +581,7 @@ social: {
   google: {
     clientId: 'your-google-client-id.googleusercontent.com',
     redirectUri: 'http://localhost:3000/auth/google/callback',
-    scopes: ['openid', 'profile', 'email']
+    scopes: 'openid profile email'
   }
 }
 ```
@@ -677,7 +677,7 @@ export default defineNuxtConfig({
       google: {
         clientId: 'your-google-client-id.googleusercontent.com',
         redirectUri: 'http://localhost:3000/auth/google/callback',
-        scopes: ['openid', 'profile', 'email']
+        scopes: 'openid profile email'
       }
     },
   },
