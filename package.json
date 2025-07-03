@@ -65,10 +65,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andychukse/nuxt-simple-auth.git"
+    "url": "git+https://github.com/andychukse/nuxt-auth.git"
   },
   "bugs": {
-    "url": "https://github.com/andychukse/nuxt-simple-auth/issues"
+    "url": "https://github.com/andychukse/nuxt-auth/issues"
   },
-  "homepage": "https://github.com/andychukse/nuxt-simple-auth#readme"
+  "homepage": "https://github.com/andychukse/nuxt-auth#readme"
 }

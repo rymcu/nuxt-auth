@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-07-02
 
 ### Added
-- Initial release of nuxt-simple-auth module
+- Initial release of @andychukse/nuxt-auth module
 - JWT authentication support with automatic token refresh
 - Social login support for Google and Apple
 - Secure cookie-based token storage
