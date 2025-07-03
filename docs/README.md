@@ -1,4 +1,4 @@
-# Simple Nuxt Auth
+# Nuxt Simple Auth
 
 A simple and flexible authentication module for Nuxt 3 with JWT and social login support. 
 **This Auth Package only works for a Nuxt app that has a separate backend that handles authenthication**
@@ -18,7 +18,7 @@ A simple and flexible authentication module for Nuxt 3 with JWT and social login
 
 ## Quick Setup
 
-1. Add `@andychukse/nuxt-auth` dependency to your project
+1. Add `nuxt-auth` dependency to your project
 
 ```bash
 # Using pnpm
