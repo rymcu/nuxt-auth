@@ -82,7 +82,7 @@ export default defineNuxtConfig({
       google: {
         clientId: 'your-google-client-id.googleusercontent.com',
         redirectUri: 'http://localhost:3000/auth/google/callback',
-        scopes: ['openid', 'profile', 'email']
+        scopes: 'openid profile email'
       }
     },
   },
@@ -581,7 +581,7 @@ social: {
   google: {
     clientId: 'your-google-client-id.googleusercontent.com',
     redirectUri: 'http://localhost:3000/auth/google/callback',
-    scopes: ['openid', 'profile', 'email']
+    scopes: 'openid profile email'
   }
 }
 ```
@@ -677,7 +677,7 @@ export default defineNuxtConfig({
       google: {
         clientId: 'your-google-client-id.googleusercontent.com',
         redirectUri: 'http://localhost:3000/auth/google/callback',
-        scopes: ['openid', 'profile', 'email']
+        scopes: 'openid profile email'
       }
     },
   },
