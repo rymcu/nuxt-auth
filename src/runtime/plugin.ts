@@ -14,8 +14,19 @@ export default defineNuxtPlugin(async () => {
     try {
       await getSession()
     }
-    catch (e) {
-      console.error('Failed to get session:', e)
+    catch (error: any) {
+      console.warn('Session fetch failed:', error?.statusMessage || error?.message)
+
+      if (error?.status === 401 || error?.statusCode === 401) {
+        console.log('Access token expired, attempting refresh')
+        try {
+          await refreshAuthToken()
+        }
+        catch (refreshError: any) {
+          console.log(refreshError)
+          console.warn('Token refresh failed:', refreshError?.statusMessage || refreshError?.message)
+        }
+      }
     }
   }
   else {

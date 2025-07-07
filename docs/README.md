@@ -70,12 +70,15 @@ export default defineNuxtConfig({
       sameSiteAttribute: 'lax',
       cookieDomain: '',
       secureCookieAttribute: false,
-      httpOnlyCookieAttribute: false,
+      httpOnlyCookieAttribute: true,
       refresh: {
         refreshOnlyToken: true,
         cookieName: 'auth.refresh',
         maxAgeInSeconds: 7776000, // 90 days
         requestTokenPointer: '/refresh_token',
+        sameSiteAttribute: 'lax',
+        secureCookieAttribute: false,       
+        httpOnlyCookieAttribute: true,
       },
     },
     social: {
@@ -559,13 +562,16 @@ token: {
   maxAgeInSeconds: 86400,              // Token expiration (1 day)
   sameSiteAttribute: 'lax',            // Cookie SameSite attribute
   cookieDomain: '',                    // Cookie domain (empty = current domain)
-  secureCookieAttribute: false,        // Use HTTPS only (true in production)
-  httpOnlyCookieAttribute: false,      // HTTP-only cookies (recommended: true)
+  secureCookieAttribute: true,        // Use HTTPS only (true in production)
+  httpOnlyCookieAttribute: true,      // HTTP-only cookies (recommended: true)
   refresh: {
     refreshOnlyToken: true,            // Only send refresh token (not access token)
     cookieName: 'auth.refresh',        // Cookie name for refresh token
     maxAgeInSeconds: 7776000,          // Refresh token expiration (90 days)
     requestTokenPointer: '/refresh_token', // Path to refresh token in request
+    sameSiteAttribute: 'lax',            // Cookie SameSite (strict in production)
+    secureCookieAttribute: true,        // Use HTTPS only (true in production)
+    httpOnlyCookieAttribute: true,      // HTTP-only cookies (recommended: true)
   },
 }
 ```
@@ -661,12 +667,15 @@ export default defineNuxtConfig({
       sameSiteAttribute: 'lax',
       cookieDomain: '',
       secureCookieAttribute: false,
-      httpOnlyCookieAttribute: false,
+      httpOnlyCookieAttribute: true,
       refresh: {
         refreshOnlyToken: true,
         cookieName: 'auth.refresh',
         maxAgeInSeconds: 7776000,
         requestTokenPointer: '/refresh_token',
+        sameSiteAttribute: 'lax',  
+        secureCookieAttribute: false,
+        httpOnlyCookieAttribute: true,
       },
     },
     social: {

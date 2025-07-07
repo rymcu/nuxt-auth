@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useAuth } from '../src/runtime/composables/useAuth'
-// import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 
 const stateStore: Record<string, any> = {}
 const cookieStore: Record<string, any> = {}
 
 vi.mock('#imports', () => ({
-
   useRuntimeConfig: () => ({
     public: {
       auth: {
@@ -31,12 +29,15 @@ vi.mock('#imports', () => ({
           sameSiteAttribute: 'lax',
           cookieDomain: '',
           secureCookieAttribute: false,
-          httpOnlyCookieAttribute: false,
+          httpOnlyCookieAttribute: true,
           refresh: {
             refreshOnlyToken: true,
             cookieName: 'auth.refresh',
             maxAgeInSeconds: 7776000,
             requestTokenPointer: '/refresh_token',
+            sameSiteAttribute: 'lax',
+            secureCookieAttribute: false,
+            httpOnlyCookieAttribute: true,
           },
         },
         social: {
@@ -56,6 +57,7 @@ vi.mock('#imports', () => ({
     return stateStore[key]
   }),
   computed: (fn: any) => ({ get value() { return fn() } }),
+  ref: (value: any) => ({ value }),
   watch: vi.fn(),
   useCookie: vi.fn((key) => {
     if (!(key in cookieStore)) {
@@ -64,14 +66,22 @@ vi.mock('#imports', () => ({
     return cookieStore[key]
   }),
   navigateTo: vi.fn(),
+  useRequestFetch: vi.fn(() => globalThis.$fetch),
+  useRequestEvent: vi.fn(() => null),
+}))
+
+vi.mock('h3', () => ({
+  setCookie: vi.fn(),
+  getCookie: vi.fn(() => null),
+  useRequestEvent: vi.fn(() => null),
 }))
 
 globalThis.$fetch = Object.assign(
-  async (request: string) => {
+  async (request: string, opts?: any) => {
     const url = String(request)
+    const method = opts?.method?.toLowerCase() || 'get'
 
-    // Handle login endpoint
-    if (url.includes('/login')) {
+    if (url.includes('/login') && method === 'post') {
       return {
         access_token: 'token',
         refresh_token: 'refresh',
@@ -79,8 +89,7 @@ globalThis.$fetch = Object.assign(
       }
     }
 
-    // Handle register endpoint
-    if (url.includes('/register')) {
+    if (url.includes('/register') && method === 'post') {
       return {
         access_token: 'token',
         refresh_token: 'refresh',
@@ -88,18 +97,15 @@ globalThis.$fetch = Object.assign(
       }
     }
 
-    // Handle session endpoint
-    if (url.includes('/session')) {
+    if (url.includes('/session') && method === 'get') {
       return { name: 'Test User', email: 'test@example.com' }
     }
 
-    // Handle logout endpoint
-    if (url.includes('/logout')) {
+    if (url.includes('/logout') && method === 'post') {
       return { success: true }
     }
 
-    // Handle google endpoint
-    if (url.includes('/api/auth/google')) {
+    if (url.includes('/api/auth/google') && method === 'post') {
       return {
         access_token: 'token',
         refresh_token: 'refresh',
@@ -107,7 +113,23 @@ globalThis.$fetch = Object.assign(
       }
     }
 
-    throw new Error(`Unhandled URL: ${url}`)
+    if (url.includes('/api/auth/token/set-token') && method === 'post') {
+      return { success: true }
+    }
+
+    if (url.includes('/api/auth/token/clear-token') && method === 'post') {
+      return { success: true }
+    }
+
+    if (url.includes('/api/auth/token/refresh') && method === 'post') {
+      return {
+        success: true,
+        access_token: 'new-token',
+        refresh_token: 'new-refresh',
+      }
+    }
+
+    throw new Error(`Unhandled URL: ${url} with method: ${method}`)
   },
   {
     raw: async (request: string, opts: any) => {
@@ -122,6 +144,10 @@ describe('useAuth composable', () => {
   let auth: ReturnType<typeof useAuth>
 
   beforeEach(() => {
+    Object.keys(stateStore).forEach(key => delete stateStore[key])
+    Object.keys(cookieStore).forEach(key => delete cookieStore[key])
+    vi.clearAllMocks()
+    
     auth = useAuth()
   })
 
@@ -134,7 +160,6 @@ describe('useAuth composable', () => {
 
     expect(auth.data.value).toMatchObject({ name: 'Test User', email: 'test@example.com' })
     expect(auth.token.value).toBe('token')
-    expect(auth.refreshToken.value).toBe('refresh')
     expect(auth.status.value).toBe('authenticated')
   })
 
@@ -143,19 +168,14 @@ describe('useAuth composable', () => {
 
     expect(auth.data.value).toMatchObject({ name: 'New User', email: 'new@example.com' })
     expect(auth.token.value).toBe('token')
-    expect(auth.refreshToken.value).toBe('refresh')
     expect(auth.status.value).toBe('authenticated')
   })
 
   it('should clear tokens on signOut', async () => {
-    // First sign in
     await auth.signIn({ email: 'test@example.com', password: 'password' })
-
-    // Then sign out
     await auth.signOut()
 
     expect(auth.token.value).toBe(null)
-    expect(auth.refreshToken.value).toBe(null)
     expect(auth.data.value).toBe(null)
     expect(auth.status.value).toBe('unauthenticated')
   })

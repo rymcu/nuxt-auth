@@ -22,16 +22,19 @@ export default defineNuxtConfig({
       type: 'Bearer',
       cookieName: 'playground.auth.token',
       headerName: 'Authorization',
-      maxAgeInSeconds: 86400, // 1 day
+      maxAgeInSeconds: 60, // 1 day
       sameSiteAttribute: 'lax',
       cookieDomain: '',
       secureCookieAttribute: false,
-      httpOnlyCookieAttribute: false,
+      httpOnlyCookieAttribute: true,
       refresh: {
         refreshOnlyToken: true,
         cookieName: 'playground.auth.refresh',
         maxAgeInSeconds: 7776000, // 90 days
         requestTokenPointer: '/refresh_token',
+        sameSiteAttribute: 'lax',
+        secureCookieAttribute: false,
+        httpOnlyCookieAttribute: true,
       },
     },
     social: {

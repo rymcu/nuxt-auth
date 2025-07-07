@@ -1,25 +1,17 @@
-import type { CookieSameSite, ModuleOptions, SessionData, SessionStatus } from '../../types'
+import type { ModuleOptions, SessionData, SessionStatus } from '../../types'
 import { authResponseError, extractByPointer } from '../utils/helper'
-import { useRuntimeConfig, useState, computed, watch, useCookie, navigateTo } from '#imports'
-import type { CookieRef } from '#app'
+import { useRuntimeConfig, useState, computed, useCookie, navigateTo, ref, useRequestFetch, useRequestEvent } from '#imports'
+import { setCookie, getCookie } from 'h3'
 
 export function useAuth() {
   const runConfig = useRuntimeConfig()
   const config: ModuleOptions = runConfig.public.auth as ModuleOptions
   const data = useState<SessionData | undefined | null>('auth:data', () => undefined)
-
-  const cookieName = config?.token?.cookieName ?? 'nuxt.auth'
-  const secureCookie = config?.token?.secureCookieAttribute ?? true
-  const httpOnly = config?.token?.httpOnlyCookieAttribute ?? true
-  const expireTokenInSeconds = config?.token?.maxAgeInSeconds ?? 1800
-  const sameSite = config?.token?.sameSiteAttribute ?? 'strict'
-  const expireRefreshTokenInSeconds = config?.token?.refresh?.maxAgeInSeconds ?? 7200
-  const refreshCookieName = config?.token?.refresh?.cookieName ?? 'nuxt.refresh-auth'
-
+  const defaultCallback = config?.callback ?? '/'
+  const cookieName = config?.token?.cookieName
+  const refreshCookieName = config?.token?.refresh?.cookieName
   const apiBase = config?.baseUrl
-
   const loading = useState<boolean>('auth:loading', () => false)
-
   const status = computed<SessionStatus>(() => {
     if (loading.value) {
       return 'loading'
@@ -30,46 +22,143 @@ export function useAuth() {
     return 'unauthenticated'
   })
 
-  const defaultCallback = config?.callback ?? '/'
+  // Synchronous token initialization
+  const getInitialToken = (): string | null => {
+    if (import.meta.server) {
+      const event = useRequestEvent()
+      if (event) {
+        return getCookie(event, cookieName) || null
+      }
+    }
+    return null // Client starts with null, loads async
+  }
 
-  const tokenCookie = useCookie(cookieName, {
-    expires: new Date(Date.now() + (expireTokenInSeconds * 1000)),
-    sameSite: sameSite as CookieSameSite,
-    httpOnly: httpOnly,
-    secure: secureCookie,
-  })
+  const getInitialRefreshToken = (): string | null => {
+    if (import.meta.server) {
+      const event = useRequestEvent()
+      if (event) {
+        return getCookie(event, refreshCookieName) || null
+      }
+    }
+    return null // Client starts with null, loads async
+  }
 
-  const refreshTokenCookie: CookieRef<string | null | undefined> = useCookie(refreshCookieName, {
-    expires: new Date(Date.now() + (expireRefreshTokenInSeconds * 1000)),
-    sameSite: sameSite as CookieSameSite,
-    httpOnly: httpOnly,
-    secure: secureCookie,
-  })
+  const getAccessToken = async () => {
+    try {
+      const tokens = await $fetch('/api/auth/token/get-token', {
+        method: 'POST',
+      })
+      console.log('Access token fetched:', tokens)
+      return tokens
+    }
+    catch (error) {
+      console.error('Failed to get tokens:', error)
+      return null
+    }
+  }
 
-  const rawToken = useState('auth:raw-token', () => (tokenCookie as any).value || null)
-  const rawRefreshToken = useState('auth:raw-refresh-token', () => (refreshTokenCookie as any).value || null)
+  const rawToken = useState<string | null>('auth:raw-token', getInitialToken)
+  const rawRefreshToken = useState<string | null>('auth:raw-refresh-token', getInitialRefreshToken)
 
-  watch(rawToken, () => {
-    tokenCookie.value = rawToken.value
-  })
+  // Load token on client-side
+  const loadClientToken = async () => {
+    if (
+      import.meta.client
+        && (rawToken.value === null || rawRefreshToken.value === null)
+    ) {
+      try {
+        const tokens = await getAccessToken() as any
+        if (tokens?.accessToken) {
+          rawToken.value = tokens?.accessToken
+        }
+        if (tokens?.refreshToken) {
+          rawRefreshToken.value = tokens?.refreshToken
+        }
+      }
+      catch (error) {
+        console.error('Failed to load client token:', error)
+      }
+    }
+  }
 
-  watch(rawRefreshToken, () => {
-    refreshTokenCookie.value = rawRefreshToken.value
-  })
+  // Initialize client token
+  if (import.meta.client) {
+    loadClientToken()
+  }
 
   const token = computed(() => rawToken.value)
   const refreshToken = computed(() => rawRefreshToken.value)
 
   const setTokens = (tokens: unknown) => {
-    rawToken.value = extractByPointer(tokens, config?.token?.tokenPointer)
-    rawRefreshToken.value = extractByPointer(tokens, config?.token?.refreshTokenPointer)
+    const accessToken = extractByPointer(tokens, config?.token?.tokenPointer)
+    const newRefreshToken = extractByPointer(tokens, config?.token?.refreshTokenPointer)
+
+    if (accessToken) {
+      rawToken.value = accessToken
+    }
+    if (newRefreshToken) {
+      rawRefreshToken.value = newRefreshToken
+    }
+    if (import.meta.server) {
+      // Server-side: set httpOnly cookie directly
+      const event = useRequestEvent()
+      if (event) {
+        if (accessToken) {
+          // Set access token as regular cookie
+          setCookie(event, config?.token?.cookieName, accessToken, {
+            domain: config?.token?.cookieDomain,
+            maxAge: config?.token?.maxAgeInSeconds,
+            sameSite: config?.token?.sameSiteAttribute,
+            secure: config?.token?.secureCookieAttribute,
+            httpOnly: config?.token?.httpOnlyCookieAttribute,
+          })
+        }
+        if (newRefreshToken) {
+          // Set access token as regular cookie
+          setCookie(event, config?.token?.refresh?.cookieName, newRefreshToken, {
+            domain: config?.token?.cookieDomain,
+            maxAge: config?.token?.refresh?.maxAgeInSeconds,
+            sameSite: config?.token?.refresh?.sameSiteAttribute,
+            secure: config?.token?.refresh?.secureCookieAttribute,
+            httpOnly: config?.token?.refresh?.httpOnlyCookieAttribute,
+          })
+        }
+      }
+    }
+    else {
+      // Client-side: make a request to set the httpOnly cookie
+      if (accessToken || newRefreshToken) {
+        $fetch('/api/auth/token/set-token', {
+          method: 'POST',
+          body: {
+            refreshToken: newRefreshToken,
+            accessToken: accessToken,
+          },
+        }).then(() => {
+          console.log('Tokens set via client request')
+        }).catch((error) => {
+          console.error('Failed to set token cookies:', error)
+        })
+      }
+    }
   }
 
-  const clearTokens = () => {
+  const clearAuthToken = async () => {
+    try {
+      await useRequestFetch()('/api/auth/token/clear-token', {
+        method: 'POST',
+      })
+    }
+    catch (error) {
+      console.error('Failed to clear refresh token:', error)
+    }
+  }
+
+  const clearTokens = async () => {
     rawToken.value = null
     rawRefreshToken.value = null
-    tokenCookie.value = null
-    refreshTokenCookie.value = null
+    data.value = null
+    await clearAuthToken()
   }
 
   const fetchApi = async (
@@ -96,6 +185,12 @@ export function useAuth() {
     }
   }
 
+  // Track refresh attempts to avoid infinite loops
+  // If we get a 401, we will try to refresh the token twice before giving up
+  // This is to prevent infinite loops in case of persistent 401 errors
+  // This is useful for cases where the refresh token is invalid or expired
+  const refreshAttemptCount = ref(0)
+  const maxRefreshAttempts = 2
   const fetchUser = async () => {
     if (!token?.value) {
       loading.value = false
@@ -119,10 +214,15 @@ export function useAuth() {
         data.value = response._data
       }
       else {
-        if (response.status === 401) {
+        if (response.status === 401 && refreshToken?.value && refreshAttemptCount.value < maxRefreshAttempts) {
+          // If 401 and we have a refresh token, try to refresh max twice
           await refreshAuthToken()
+          refreshAttemptCount.value++
           return await fetchUser()
         }
+
+        // If we reach here, it means we either don't have a refresh token or we've exhausted attempts
+        await clearTokens()
 
         data.value = null
       }
@@ -347,27 +447,39 @@ export function useAuth() {
       await signOut()
       return
     }
-    const url = config.endpoints?.refresh?.path
-    const refresh_token = refreshToken.value
 
-    const params = JSON.stringify({ refresh_token })
+    try {
+      // Call the server-side refresh handler instead of calling backend directly
+      const response: any = await useRequestFetch()('/api/auth/token/refresh', {
+        method: 'POST',
+      })
 
-    const response: any = await fetchApi(
-      url,
-      {
-        method: config.endpoints?.refresh?.method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: params,
-      },
-    )
+      if (response && response.access_token) {
+        // Update the access token directly
+        rawToken.value = response.access_token
 
-    if (response?.ok && response?._data) {
-      setTokens(response._data)
+        // Update the refresh token state if new one is provided
+        if (response.refresh_token) {
+          rawRefreshToken.value = response.refresh_token
+        }
+
+        // If user data is included in response, update it
+        if (response?.user) {
+          data.value = response.user
+        }
+        else {
+          // Fetch user data with new token
+          await fetchUser()
+        }
+      }
+      else {
+        throw new Error('No response from refresh endpoint')
+      }
     }
-    else {
-      clearTokens()
+    catch (error: any) {
+      console.error('Token refresh failed:', error)
+      // Clear tokens and sign out user on refresh failure
+      await clearTokens()
       data.value = null
     }
   }
@@ -387,7 +499,7 @@ export function useAuth() {
         },
       )
     }
-    clearTokens()
+    await clearTokens()
     data.value = null
   }
 
@@ -395,9 +507,8 @@ export function useAuth() {
     status,
     data,
     token,
-    rawToken,
     refreshToken,
-    rawRefreshToken,
+    rawToken,
     loading,
     signUp,
     signIn,
@@ -407,6 +518,6 @@ export function useAuth() {
     initiateSocialLogin,
     handleSocialCallback,
     refreshAuthToken,
-    clearTokens,
+    clearTokens
   }
 }

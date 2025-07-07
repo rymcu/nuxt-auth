@@ -22,15 +22,18 @@ const defaultOptions: ModuleOptions = {
     cookieName: 'nuxt-auth.token',
     headerName: 'Authorization',
     maxAgeInSeconds: 86400, // 1 day
-    sameSiteAttribute: 'lax',
+    sameSiteAttribute: 'strict',
     cookieDomain: '',
-    secureCookieAttribute: false,
-    httpOnlyCookieAttribute: false,
+    secureCookieAttribute: true,
+    httpOnlyCookieAttribute: true,
     refresh: {
       refreshOnlyToken: true,
       cookieName: 'nuxt-auth.refresh',
       maxAgeInSeconds: 7776000, // 90 days
       requestTokenPointer: '/refresh_token',
+      sameSiteAttribute: 'strict',
+      secureCookieAttribute: true,
+      httpOnlyCookieAttribute: true,
     },
   },
   social: {
@@ -69,6 +72,7 @@ export default defineNuxtModule<ModuleOptions>({
     // Add module options to runtime config
     nuxt.options.runtimeConfig = nuxt.options.runtimeConfig || { public: {} }
     nuxt.options.runtimeConfig.public.auth = moduleOptions
+    // logger.info('Module options:', moduleOptions)
 
     // Add the auth plugin
     addPlugin({
@@ -102,6 +106,30 @@ export default defineNuxtModule<ModuleOptions>({
     addServerHandler({
       route: '/auth/google/callback',
       handler: resolver.resolve('./runtime/server/routes/auth/google/callback/index.get'),
+    })
+
+    // Add server handlers for refreshing tokens
+    addServerHandler({
+      route: '/api/auth/token/refresh',
+      handler: resolver.resolve('./runtime/server/api/auth/token/refresh.post'),
+    })
+
+    // Add server handlers for setting refresh tokens
+    addServerHandler({
+      route: '/api/auth/token/set-token',
+      handler: resolver.resolve('./runtime/server/api/auth/token/set-token.post'),
+    })
+
+    // Add server handlers for setting getting access token
+    addServerHandler({
+      route: '/api/auth/token/get-token',
+      handler: resolver.resolve('./runtime/server/api/auth/token/get-token.post'),
+    })
+
+    // Add server handlers for setting clearing tokens
+    addServerHandler({
+      route: '/api/auth/token/clear-token',
+      handler: resolver.resolve('./runtime/server/api/auth/token/clear-token.post'),
     })
 
     // Add utilities

@@ -24,7 +24,7 @@ export interface AuthToken {
   cookieName: string
   headerName: string
   maxAgeInSeconds: number
-  sameSiteAttribute: string
+  sameSiteAttribute: 'strict' | 'lax' | 'none'
   cookieDomain: string
   secureCookieAttribute: boolean
   httpOnlyCookieAttribute: boolean | undefined
@@ -33,6 +33,9 @@ export interface AuthToken {
     cookieName: string
     maxAgeInSeconds: number
     requestTokenPointer: string
+    httpOnlyCookieAttribute?: boolean // Add this for refresh token security
+    secureCookieAttribute?: boolean // Add this for HTTPS enforcement
+    sameSiteAttribute?: 'strict' | 'lax' | 'none'
   }
 }
 

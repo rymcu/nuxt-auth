@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-07-07
+### Added
+- Added Support for `httpOnly: true` cookies
+- Added Tracking refresh attempts to avoid infinite loops
+- Server-side Token Refresh 
+
 ## [1.0.1] - 2025-07-02
 
 ### Added
@@ -17,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript support with full type definitions
 - Server-side rendering (SSR) compatibility
 - Configurable API endpoints and token management
-- Utility functions for admin privilege checking and error handling
+- Utility functions for error handling
 - Comprehensive documentation and playground for testing
 
 ### Features
