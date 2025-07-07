@@ -144,10 +144,12 @@ describe('useAuth composable', () => {
   let auth: ReturnType<typeof useAuth>
 
   beforeEach(() => {
-    Object.keys(stateStore).forEach(key => delete stateStore[key])
-    Object.keys(cookieStore).forEach(key => delete cookieStore[key])
+    stateStore.value = null
+    cookieStore.value = null
+    // Object.keys(stateStore).forEach(key => delete stateStore[key])
+    // Object.keys(cookieStore).forEach(key => delete cookieStore[key])
     vi.clearAllMocks()
-    
+
     auth = useAuth()
   })
 

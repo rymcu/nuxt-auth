@@ -518,6 +518,6 @@ export function useAuth() {
     initiateSocialLogin,
     handleSocialCallback,
     refreshAuthToken,
-    clearTokens
+    clearTokens,
   }
 }
