@@ -392,7 +392,7 @@ export function useAuth() {
   }
 
   // Handle OAuth callback
-  const handleSocialCallback = async (provider: string, code: string, state?: string) => {
+  const handleSocialCallback = async (provider: string, code: string, state?: string, params?: any) => {
     if (import.meta.client) {
       // Verify state for CSRF protection
       const storedState = localStorage.getItem('oauth_state')
@@ -407,8 +407,11 @@ export function useAuth() {
       localStorage.removeItem('oauth_state')
       localStorage.removeItem('oauth_callback')
 
+      // Merge additional params into the code object
+      const data = (params && typeof params === 'object') ? { code, ...params } : { code }
+
       // Exchange code for tokens via your backend
-      await signInWithSocial(provider, { code }, { callbackUrl: callbackUrl || undefined })
+      await signInWithSocial(provider, data, { callbackUrl: callbackUrl || undefined })
     }
   }
 
