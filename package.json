@@ -1,6 +1,6 @@
 {
   "name": "@andychukse/nuxt-auth",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "A Simple Nuxt authentication module with JWT and social login support for Nuxt Apps with separate backend",
   "keywords": [
     "nuxt",
@@ -46,22 +46,22 @@
     "clean": "rm -rf playground-authjs/.nuxt playground-local/.nuxt playground-refresh/.nuxt dist .nuxt"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.17.6",
-    "defu": "^6.1.4"
+    "defu": "^6.1.4",
+    "@nuxt/kit": "^4.2.1"
   },
   "devDependencies": {
-    "@nuxt/devtools": "^2.6.0",
-    "@nuxt/eslint-config": "^1.4.1",
-    "@nuxt/module-builder": "^1.0.1",
-    "@nuxt/schema": "^3.17.6",
-    "@nuxt/test-utils": "^3.19.1",
+    "@nuxt/devtools": "^3.1.1",
+    "@nuxt/eslint-config": "^1.11.0",
+    "@nuxt/module-builder": "^1.0.2",
+    "@nuxt/schema": "^4.2.1",
+    "@nuxt/test-utils": "^3.21.0",
     "@types/node": "latest",
-    "changelogen": "^0.6.1",
-    "eslint": "^9.30.0",
-    "nuxt": "^3.17.6",
-    "typescript": "~5.8.3",
+    "changelogen": "^0.6.2",
+    "eslint": "^9.39.1",
+    "nuxt": "^4.2.1",
+    "typescript": "~5.9.3",
     "vitest": "^3.2.4",
-    "vue-tsc": "^2.2.10"
+    "vue-tsc": "^3.1.7"
   },
   "repository": {
     "type": "git",

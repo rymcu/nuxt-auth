@@ -52,7 +52,7 @@ export default defineNuxtModule<ModuleOptions>({
     name: MODULE_NAME,
     configKey: 'auth',
     compatibility: {
-      nuxt: '^3.0.0',
+      nuxt: '^3.0.0 || ^4.0.0',
     },
   },
   defaults: defaultOptions,
