@@ -74,6 +74,9 @@
 
     <!-- OAuth Flow Demo -->
     <OAuthDemo />
+
+    <!-- Backend OAuth2 Demo (for integration with Spring Security OAuth2, etc.) -->
+    <BackendOAuthDemo />
   </div>
 </template>
 

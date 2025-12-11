@@ -1,5 +1,5 @@
 {
-  "name": "@andychukse/nuxt-auth",
+  "name": "@rymcu/nuxt-auth",
   "version": "1.1.1",
   "description": "A Simple Nuxt authentication module with JWT and social login support for Nuxt Apps with separate backend",
   "keywords": [
@@ -12,7 +12,7 @@
     "google-auth",
     "module"
   ],
-  "author": "Andrew Eze",
+  "author": "ronger",
   "license": "MIT",
   "main": "./dist/module.mjs",
   "type": "module",
@@ -65,10 +65,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andychukse/nuxt-auth.git"
+    "url": "git+https://github.com/rymcu/nuxt-auth.git"
   },
   "bugs": {
-    "url": "https://github.com/andychukse/nuxt-auth/issues"
+    "url": "https://github.com/rymcu/nuxt-auth/issues"
   },
-  "homepage": "https://github.com/andychukse/nuxt-auth#readme"
+  "homepage": "https://github.com/rymcu/nuxt-auth#readme"
 }
